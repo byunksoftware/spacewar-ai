@@ -16,7 +16,7 @@
   #left,#right{display:inline-block;padding:7px 11px;background:rgba(0,0,0,.92);border:2px solid rgba(255,255,255,.8);min-width:130px;box-sizing:border-box;font-weight:bold}
   #right{text-align:right}
   #round{display:inline-block;padding:6px 9px;background:rgba(0,0,0,.52);border:1px solid rgba(255,255,255,.28)}
-  #gauges{position:absolute;left:20px;right:20px;bottom:38px;z-index:50;display:flex;justify-content:space-between;
+  #gauges{position:absolute;left:20px;right:20px;bottom:22px;z-index:50;display:flex;justify-content:space-between;
         align-items:flex-end;pointer-events:none}
   .gauge{width:min(260px,28vw);padding:8px 10px;background:rgba(0,0,0,.9);border:2px solid rgba(255,255,255,.78);
         box-sizing:border-box;text-shadow:0 0 5px #000}
@@ -48,7 +48,7 @@
 <body>
 <div id="wrap">
 <canvas id="game" width="1024" height="768"></canvas>
-<div id="hud"><span id="left">HUMAN  0</span><span id="round">SPACEWAR! • 1962</span><span id="right">COMPUTER  0</span></div>
+<div id="hud"><span id="left"></span><span id="round">SPACEWAR! • 1962</span><span id="right"></span></div>
 <div id="gauges">
   <div class="gauge fuel-gauge">
     <div class="gauge-label">FUEL <span id="fuelValue">100</span>%</div>
@@ -278,33 +278,37 @@ function update(dt){
 }
 function drawScoreboard(){
   ctx.save();
-  ctx.font='bold 20px "Courier New", monospace';
+  ctx.font='bold 18px "Courier New", monospace';
   ctx.textBaseline='top';
-  ctx.textAlign='left';
-  const padX=14, padY=10, boxH=34;
+
+  const margin=14;
+  const boxH=32;
+  const y=H-140; // clear space above the bottom fuel/missile gauges
   const leftText=`HUMAN  ${scoreP}`;
   const rightText=`COMPUTER  ${scoreAI}`;
 
-  // Human score box
+  // Human score
+  ctx.textAlign='left';
   const leftW=ctx.measureText(leftText).width+26;
-  ctx.fillStyle='rgba(0,0,0,.92)';
-  ctx.fillRect(padX,8,leftW,boxH);
-  ctx.strokeStyle='rgba(255,255,255,.85)';
+  ctx.fillStyle='rgba(0,0,0,.94)';
+  ctx.fillRect(margin,y,leftW,boxH);
+  ctx.strokeStyle='#fff';
   ctx.lineWidth=2;
-  ctx.strokeRect(padX,8,leftW,boxH);
+  ctx.strokeRect(margin,y,leftW,boxH);
   ctx.fillStyle='#fff';
-  ctx.fillText(leftText,padX+13,padY);
+  ctx.fillText(leftText,margin+13,y+7);
 
-  // Computer score box
-  const rightW=ctx.measureText(rightText).width+26;
-  const rightX=W-padX-rightW;
-  ctx.fillStyle='rgba(0,0,0,.92)';
-  ctx.fillRect(rightX,8,rightW,boxH);
-  ctx.strokeStyle='rgba(255,255,255,.85)';
-  ctx.strokeRect(rightX,8,rightW,boxH);
-  ctx.fillStyle='#fff';
+  // Computer score
   ctx.textAlign='right';
-  ctx.fillText(rightText,W-padX-13,padY);
+  const rightW=ctx.measureText(rightText).width+26;
+  const rightX=W-margin-rightW;
+  ctx.fillStyle='rgba(0,0,0,.94)';
+  ctx.fillRect(rightX,y,rightW,boxH);
+  ctx.strokeStyle='#fff';
+  ctx.strokeRect(rightX,y,rightW,boxH);
+  ctx.fillStyle='#fff';
+  ctx.fillText(rightText,W-margin-13,y+7);
+
   ctx.restore();
 }
 
