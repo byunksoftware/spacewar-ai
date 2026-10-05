@@ -276,6 +276,38 @@ function update(dt){
     },900);
   }
 }
+function drawScoreboard(){
+  ctx.save();
+  ctx.font='bold 20px "Courier New", monospace';
+  ctx.textBaseline='top';
+  ctx.textAlign='left';
+  const padX=14, padY=10, boxH=34;
+  const leftText=`HUMAN  ${scoreP}`;
+  const rightText=`COMPUTER  ${scoreAI}`;
+
+  // Human score box
+  const leftW=ctx.measureText(leftText).width+26;
+  ctx.fillStyle='rgba(0,0,0,.92)';
+  ctx.fillRect(padX,8,leftW,boxH);
+  ctx.strokeStyle='rgba(255,255,255,.85)';
+  ctx.lineWidth=2;
+  ctx.strokeRect(padX,8,leftW,boxH);
+  ctx.fillStyle='#fff';
+  ctx.fillText(leftText,padX+13,padY);
+
+  // Computer score box
+  const rightW=ctx.measureText(rightText).width+26;
+  const rightX=W-padX-rightW;
+  ctx.fillStyle='rgba(0,0,0,.92)';
+  ctx.fillRect(rightX,8,rightW,boxH);
+  ctx.strokeStyle='rgba(255,255,255,.85)';
+  ctx.strokeRect(rightX,8,rightW,boxH);
+  ctx.fillStyle='#fff';
+  ctx.textAlign='right';
+  ctx.fillText(rightText,W-padX-13,padY);
+  ctx.restore();
+}
+
 function drawShip(s){
   if(!s.alive)return;
   ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);
@@ -374,6 +406,7 @@ function draw(){
   for(const p of sparks){ctx.globalAlpha=clamp(p.t*2,0,1);ctx.fillRect(p.x,p.y,2,2)}
   ctx.globalAlpha=1;
   drawShip(player);drawShip(ai);
+  drawScoreboard();
 
   document.getElementById("left").textContent=`HUMAN  ${scoreP}`;
   document.getElementById("right").textContent=`COMPUTER  ${scoreAI}`;
