@@ -1,722 +1,396 @@
-<!DOCTYPE html>
-<!-- saved from url=(0057)file:///Users/Kevin/Downloads/spacewar_1962_ai%20(2).html -->
+<!doctype html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>SPACEWAR! 1962 • AI Duel</title>
-    <style>
-    html, body {
-        margin: 0;
-        height: 100%;
-        background: #000;
-        color: #ddd;
-        font-family: "Courier New", monospace;
-        overflow: hidden
-    }
-
-    body {
-        display: flex;
-        align-items: center;
-        justify-content: center
-    }
-
-    #wrap {
-        width: min(1100px, 100vw);
-        position: relative
-    }
-
-    canvas {
-        display: block;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 4/3;
-        background: #000;
-        image-rendering: pixelated;
-        box-shadow: 0 0 25px #111
-    }
-
-    #hud {
-        position: absolute;
-        left: 12px;
-        right: 12px;
-        top: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        box-sizing: border-box;
-        padding: 16px 18px;
-        z-index: 20;
-        pointer-events: none;
-        font-size: clamp(14px, 1.7vw, 20px);
-        letter-spacing: 2px;
-        font-weight: bold;
-        text-shadow: 0 0 5px #000
-    }
-
-    #left, #right {
-        display: inline-block;
-        padding: 7px 11px;
-        background: rgba(0, 0, 0, .92);
-        border: 2px solid rgba(255, 255, 255, .8);
-        min-width: 130px;
-        box-sizing: border-box;
-        font-weight: bold
-    }
-
-    #right {
-        text-align: right
-    }
-
-    #round {
-        display: inline-block;
-        padding: 6px 9px;
-        background: rgba(0, 0, 0, .52);
-        border: 1px solid rgba(255, 255, 255, .28)
-    }
-
-    #help {
-        position: absolute;
-        bottom: 2%;
-        left: 0;
-        right: 0;
-        z-index: 50;
-        text-align: center;
-        font-size: clamp(10px, 1.25vw, 14px);
-        opacity: .72;
-        pointer-events: none
-    }
-
-    #menu {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        z-index: 100;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, .78)
-    }
-
-    .panel {
-        border: 1px solid #aaa;
-        padding: 24px 30px;
-        max-width: 520px;
-        text-align: center;
-        box-shadow: 0 0 20px #222
-    }
-
-    h1 {
-        font-size: clamp(26px, 5vw, 52px);
-        font-weight: normal;
-        letter-spacing: 8px;
-        margin: 0 0 5px
-    }
-
-    .sub {
-        font-size: 12px;
-        opacity: .7;
-        margin-bottom: 20px
-    }
-
-    button {
-        font: inherit;
-        background: #000;
-        color: #ddd;
-        border: 1px solid #aaa;
-        padding: 10px 18px;
-        cursor: pointer
-    }
-
-    button:hover {
-        background: #ddd;
-        color: #000
-    }
-
-    label {
-        display: block;
-        margin: 14px 0;
-        font-size: 13px
-    }
-
-    input[type=range] {
-        width: 220px;
-        accent-color: #aaa
-    }
-
-    #status {
-        margin-top: 15px;
-        min-height: 18px;
-        font-size: 13px
-    }
-
-    .blink {
-        animation: blink .9s steps(2, start) infinite
-    }
-
-    @keyframes blink {
-        50% {
-            opacity: 0
-        }
-    }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPACEWAR! 1962 • AI Duel</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;color:#ddd;font-family:"Courier New",monospace;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  #wrap{width:min(1100px,100vw);position:relative}
+  canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;background:#000;image-rendering:pixelated;box-shadow:0 0 25px #111}
+  #hud{position:absolute;left:12px;right:12px;top:10px;display:flex;justify-content:space-between;
+       align-items:flex-start;box-sizing:border-box;padding:16px 18px;z-index:20;
+       pointer-events:none;font-size:clamp(14px,1.7vw,20px);letter-spacing:2px;font-weight:bold;
+       text-shadow:0 0 5px #000}
+  #left,#right{display:inline-block;padding:7px 11px;background:rgba(0,0,0,.92);border:2px solid rgba(255,255,255,.8);min-width:130px;box-sizing:border-box;font-weight:bold}
+  #right{text-align:right}
+  #round{display:inline-block;padding:6px 9px;background:rgba(0,0,0,.52);border:1px solid rgba(255,255,255,.28)}
+  #gauges{position:absolute;left:20px;right:20px;bottom:38px;z-index:50;display:flex;justify-content:space-between;
+        align-items:flex-end;pointer-events:none}
+  .gauge{width:min(260px,28vw);padding:8px 10px;background:rgba(0,0,0,.9);border:2px solid rgba(255,255,255,.78);
+        box-sizing:border-box;text-shadow:0 0 5px #000}
+  .gauge-label{font-size:clamp(11px,1.25vw,15px);letter-spacing:2px;font-weight:bold;margin-bottom:5px}
+  .gauge-track{height:10px;border:1px solid rgba(255,255,255,.65);box-sizing:border-box;background:#111}
+  .gauge-fill{height:100%;width:100%;background:#ddd;transition:width .08s linear}
+  .missile-gauge{text-align:right}
+  .missile-gauge .gauge-track{direction:rtl}
+  #help{position:absolute;bottom:2%;left:0;right:0;z-index:51;text-align:center;font-size:clamp(10px,1.25vw,14px);
+        opacity:.72;pointer-events:none}
+  #menu{position:absolute;inset:0;display:flex;z-index:100;align-items:center;justify-content:center;background:rgba(0,0,0,.78)}
+  .panel{border:1px solid #aaa;padding:24px 30px;max-width:520px;text-align:center;box-shadow:0 0 20px #222}
+  h1{font-size:clamp(26px,5vw,52px);font-weight:normal;letter-spacing:8px;margin:0 0 5px}
+  .sub{font-size:12px;opacity:.7;margin-bottom:20px}
+  button{font:inherit;background:#000;color:#ddd;border:1px solid #aaa;padding:10px 18px;cursor:pointer}
+  button:hover{background:#ddd;color:#000}
+  label{display:block;margin:14px 0;font-size:13px}
+  input[type=range]{width:220px;accent-color:#aaa}
+  .controls{margin:16px auto 18px;padding:11px 16px;border-top:1px solid #555;border-bottom:1px solid #555;
+            width:min(360px,80vw);box-sizing:border-box;text-align:left;font-size:12px;line-height:1.65;letter-spacing:.5px}
+  .controls-title{text-align:center;font-size:11px;letter-spacing:2px;margin-bottom:5px;opacity:.8}
+  .controls div{display:flex;justify-content:flex-start;gap:12px}
+  .controls span{display:inline-block;width:76px;text-align:right;font-weight:bold}
+  #status{margin-top:15px;min-height:18px;font-size:13px}
+  .blink{animation:blink .9s steps(2,start) infinite}
+  @keyframes blink{50%{opacity:0}}
+</style>
 </head>
 <body>
-    <div id="wrap">
-        <canvas id="game" width="1024" height="768">
-        </canvas>
-        <div id="hud">
-            <span id="left">HUMAN  0</span>
-            <span id="round">SPACEWAR! • 1962</span>
-            <span id="right">COMPUTER  0</span>
-        </div>
-        <div id="help">A/D rotate • W thrust • S fire • SPACE hyperspace • R restart • ESC pause</div>
-        <div id="menu">
-            <div class="panel">
-                <h1>SPACEWAR!</h1>
-                <div class="sub">PDP-1 / 1962 / ONE HUMAN + ONE SILICON NERVOUS SYSTEM</div>
-                <label>
-                    AI PILOT:
-
-                    <select id="difficulty" style="font:inherit;background:#000;color:#ddd;border:1px solid #777;padding:5px">
-                        <option value="0.75">CADET</option>
-                        <option value="1" selected="">STANDARD</option>
-                        <option value="1.25">ACE</option>
-                        <option value="1.55">SLUG RUSSELL MODE</option>
-                    </select>
-                </label>
-                <button id="start">INSERT COIN? &nbsp; NO. JUST LAUNCH.</button>
-                <div id="status"></div>
-                <div class="sub" style="margin-top:20px">
-                    Inspired by the original PDP-1 Spacewar!
-                    <br>
-                    Original Spacewar! code is public domain; creator credits preserved.
-                </div>
-            </div>
-        </div>
+<div id="wrap">
+<canvas id="game" width="1024" height="768"></canvas>
+<div id="hud"><span id="left">HUMAN  0</span><span id="round">SPACEWAR! • 1962</span><span id="right">COMPUTER  0</span></div>
+<div id="gauges">
+  <div class="gauge fuel-gauge">
+    <div class="gauge-label">FUEL <span id="fuelValue">100</span>%</div>
+    <div class="gauge-track"><div id="fuelFill" class="gauge-fill"></div></div>
+  </div>
+  <div class="gauge missile-gauge">
+    <div class="gauge-label">MISSILES <span id="missileValue">18</span></div>
+    <div class="gauge-track"><div id="missileFill" class="gauge-fill"></div></div>
+  </div>
+</div>
+<div id="help"></div>
+<div id="menu">
+  <div class="panel">
+    <h1>SPACEWAR!</h1>
+    <div class="sub">PDP-1 / 1962 / ONE HUMAN + ONE SILICON NERVOUS SYSTEM</div>
+    <label>AI PILOT:
+      <select id="difficulty" style="font:inherit;background:#000;color:#ddd;border:1px solid #777;padding:5px">
+        <option value="0.75">CADET</option>
+        <option value="1" selected>STANDARD</option>
+        <option value="1.25">ACE</option>
+        <option value="1.55">SLUG RUSSELL MODE</option>
+      </select>
+    </label>
+    <div class="controls">
+      <div class="controls-title">KEYBOARD CONTROLS</div>
+      <div><span>A / D</span> ROTATE</div>
+      <div><span>W</span> THRUST</div>
+      <div><span>S</span> FIRE MISSILE</div>
+      <div><span>SPACE</span> HYPERSPACE</div>
+      <div><span>R</span> RESTART</div>
+      <div><span>ESC</span> PAUSE</div>
     </div>
-    <script>
-    "use strict";
-    const C = document.getElementById("game"),
-        ctx = C.getContext("2d");
-    const W = C.width,
-        H = C.height,
-        CX = W / 2,
-        CY = H / 2;
-    const keys = new Set();
-    let running = false,
-        paused = false,
-        scoreP = 0,
-        scoreAI = 0,
-        roundOver = false;
-    let difficulty = 1,
-        last = 0,
-        stars = [],
-        shots = [],
-        sparks = [],
-        player,
-        ai,
-        starMass = 14500;
+    <button id="start">INSERT COIN? &nbsp; NO. JUST LAUNCH.</button>
+    <div id="status"></div>
+    <div class="sub" style="margin-top:20px">Inspired by the original PDP-1 Spacewar!<br>Original Spacewar! code is public domain; creator credits preserved.</div>
+  </div>
+</div>
+</div>
+<script>
+"use strict";
+const C=document.getElementById("game"),ctx=C.getContext("2d");
+const W=C.width,H=C.height, CX=W/2,CY=H/2;
+const keys=new Set();
+let running=false, paused=false, scoreP=0,scoreAI=0,roundOver=false;
+let difficulty=1, last=0, stars=[], shots=[], sparks=[], player, ai, starMass=14500;
 
-    function rand(a, b) {
-        return a + Math.random() * (b - a)
-    }
-    function clamp(v, a, b) {
-        return Math.max(a, Math.min(b, v))
-    }
-    function wrap(o) {
-        if (o.x < 0)
-            o.x += W;
-        if (o.x >= W)
-            o.x -= W;
-        if (o.y < 0)
-            o.y += H;
-        if (o.y >= H)
-            o.y -= H;
-    }
-    function dist2(a, b) {
-        let dx = a.x - b.x,
-            dy = a.y - b.y;
-        return dx * dx + dy * dy
-    }
-    function angleDiff(a, b) {
-        return Math.atan2(Math.sin(a - b), Math.cos(a - b))
-    }
-    function makeStars() {
-        stars = [];
-        for (let i = 0; i < 330; i++) {
-            let x = rand(0, W),
-                y = rand(0, H);
-            if (Math.hypot(x - CX, y - CY) < 125) {
-                i--;
-                continue
-            }
-            stars.push({
-                x,
-                y,
-                b: Math.random() < .08 ? 2 : 1,
-                p: Math.random()
-            });
-        }
-    }
-    function ship(x, y, a, kind) {
-        return {
-            x,
-            y,
-            vx: 0,
-            vy: 0,
-            a,
-            kind,
-            alive: true,
-            fuel: 100,
-            ammo: 18,
-            hyp: 3,
-            cool: 0,
-            respawn: 0,
-            think: 0,
-            targetA: a,
-            thrusting: false
-        };
-    }
-    function resetRound() {
-        player = ship(W * .25, H * .5, 0, "needle");
-        ai = ship(W * .75, H * .5, Math.PI, "wedge");
-        shots = [];
-        sparks = [];
-        roundOver = false;
-        player.vx = 0;
-        player.vy = -.45;
-        ai.vx = 0;
-        ai.vy = .45;
-    }
-    function start() {
-        difficulty = parseFloat(document.getElementById("difficulty").value);
-        scoreP = scoreAI = 0;
-        resetRound();
-        running = true;
-        paused = false;
-        document.getElementById("menu").style.display = "none";
-    }
-    document.getElementById("start").onclick = start;
-    document.getElementById("difficulty").onchange = e => difficulty = parseFloat(e.target.value);
-    addEventListener("keydown", e => {
-        keys.add(e.code);
-        if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code))
-            e.preventDefault();
-        if (e.code === "KeyR") {
-            if (running)
-                resetRound();
-            else
-                start()
-        }
-        if (e.code === "Escape" && running)
-            paused = !paused;
-    });
-    addEventListener("keyup", e => keys.delete(e.code));
+function rand(a,b){return a+Math.random()*(b-a)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function wrap(o){
+  if(o.x<0)o.x+=W;if(o.x>=W)o.x-=W;
+  if(o.y<0)o.y+=H;if(o.y>=H)o.y-=H;
+}
+function dist2(a,b){let dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy}
+function angleDiff(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b))}
+function makeStars(){
+  stars=[];
+  for(let i=0;i<330;i++){
+    let x=rand(0,W),y=rand(0,H);
+    if(Math.hypot(x-CX,y-CY)<125) {i--;continue}
+    stars.push({x,y,b:Math.random()<.08?2:1,p:Math.random()});
+  }
+}
+function ship(x,y,a,kind){
+  return {x,y,vx:0,vy:0,a,kind,alive:true,fuel:100,ammo:18,hyp:3,
+          cool:0,respawn:0,think:0,targetA:a,thrusting:false};
+}
+function resetRound(){
+  player=ship(W*.25,H*.5,0,"needle");
+  ai=ship(W*.75,H*.5,Math.PI,"wedge");
+  shots=[];sparks=[];roundOver=false;
+  player.vx=0;player.vy=-.45; ai.vx=0;ai.vy=.45;
+}
+function start(){
+  difficulty=parseFloat(document.getElementById("difficulty").value);
+  scoreP=scoreAI=0;resetRound();running=true;paused=false;
+  document.getElementById("menu").style.display="none";
+}
+document.getElementById("start").onclick=start;
+document.getElementById("difficulty").onchange=e=>difficulty=parseFloat(e.target.value);
+addEventListener("keydown",e=>{
+  keys.add(e.code);
+  if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code))e.preventDefault();
+  if(e.code==="KeyR") {if(running)resetRound(); else start()}
+  if(e.code==="Escape" && running) paused=!paused;
+});
+addEventListener("keyup",e=>keys.delete(e.code));
 
-    function explode(s) {
-        for (let i = 0; i < 42; i++) {
-            let a = rand(0, Math.PI * 2),
-                sp = rand(.4, 3.2);
-            sparks.push({
-                x: s.x,
-                y: s.y,
-                vx: Math.cos(a) * sp,
-                vy: Math.sin(a) * sp,
-                t: rand(.3, 1)
-            });
-        }
+function explode(s){
+  for(let i=0;i<42;i++){
+    let a=rand(0,Math.PI*2),sp=rand(.4,3.2);
+    sparks.push({x:s.x,y:s.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,t:rand(.3,1)});
+  }
+}
+function fire(s){
+  if(!s.alive||s.cool>0||s.ammo<=0)return;
+  s.ammo--;s.cool=.22;
+  let nose=10;
+  shots.push({x:s.x+Math.cos(s.a)*nose,y:s.y+Math.sin(s.a)*nose,
+              vx:s.vx+Math.cos(s.a)*7.2,vy:s.vy+Math.sin(s.a)*7.2,
+              life:1.35,owner:s});
+}
+function hyperspace(s){
+  if(!s.alive||s.hyp<=0)return;
+  s.hyp--;
+  if(Math.random()<.09*s.hyp){s.alive=false;explode(s);return}
+  for(let i=0;i<12;i++)sparks.push({x:s.x,y:s.y,vx:rand(-2,2),vy:rand(-2,2),t:.35});
+  s.x=rand(30,W-30);s.y=rand(30,H-30);
+  s.vx=rand(-1.5,1.5);s.vy=rand(-1.5,1.5);
+}
+function respawnAtEdge(s){
+  // Hitting the sun is a setback, not a scored kill. Re-enter at a random screen edge.
+  explode(s);
+  const pad=28, side=Math.floor(Math.random()*4);
+  if(side===0){ s.x=rand(pad,W-pad); s.y=pad; }
+  else if(side===1){ s.x=W-pad; s.y=rand(pad,H-pad); }
+  else if(side===2){ s.x=rand(pad,W-pad); s.y=H-pad; }
+  else { s.x=pad; s.y=rand(pad,H-pad); }
+
+  // Launch back into the arena with a small, random velocity.
+  const inward=Math.atan2(CY-s.y,CX-s.x)+rand(-0.35,0.35);
+  const sp=rand(0.35,0.95);
+  s.vx=Math.cos(inward)*sp;
+  s.vy=Math.sin(inward)*sp;
+  s.thrusting=false;
+  s.cool=.2;
+}
+function controlPlayer(dt){
+  if(!player.alive)return;
+  const turn=3.3;
+  if(keys.has("KeyA"))player.a-=turn*dt;
+  if(keys.has("KeyD"))player.a+=turn*dt;
+  if(keys.has("KeyW") && player.fuel>0){
+    player.thrusting=true;player.fuel=Math.max(0,player.fuel-18*dt);
+    player.vx+=Math.cos(player.a)*2.35*dt;player.vy+=Math.sin(player.a)*2.35*dt;
+    for(let i=0;i<2;i++)sparks.push({x:player.x-Math.cos(player.a)*8,y:player.y-Math.sin(player.a)*8,
+      vx:-player.vx*.08+rand(-.7,.7),vy:-player.vy*.08+rand(-.7,.7),t:.18});
+  } else player.thrusting=false;
+  if(keys.has("KeyS"))fire(player);
+  if(keys.has("Space") && !player._space){hyperspace(player);player._space=true}
+  if(!keys.has("Space"))player._space=false;
+}
+function aiControl(dt){
+  if(!ai.alive)return;
+  const dx=player.x-ai.x,dy=player.y-ai.y;
+  let desired=Math.atan2(dy,dx);
+  // Lead the target. The AI gets better at higher difficulty, but never becomes clairvoyant.
+  desired=Math.atan2(dy+player.vy*.55/difficulty,dx+player.vx*.55/difficulty);
+  // Add orbital bias: occasionally use the star rather than charging straight in.
+  const r=Math.hypot(ai.x-CX,ai.y-CY);
+  if(r<150) desired += Math.PI*.35*Math.sign(Math.sin(performance.now()/900));
+  const err=angleDiff(desired,ai.a);
+  const turn=2.0*difficulty;
+  ai.a+=clamp(err,-turn*dt,turn*dt);
+
+  let face=Math.abs(err)<.24;
+  // Thrust when aimed reasonably well, and brake if getting too close to the star.
+  if((face && Math.random()<.72*difficulty)||r<190){
+    if(ai.fuel>0){
+      ai.thrusting=true;ai.fuel=Math.max(0,ai.fuel-15*dt);
+      ai.vx+=Math.cos(ai.a)*2.0*dt;ai.vy+=Math.sin(ai.a)*2.0*dt;
     }
-    function fire(s) {
-        if (!s.alive || s.cool > 0 || s.ammo <= 0)
-            return;
-        s.ammo--;
-        s.cool = .22;
-        let nose = 10;
-        shots.push({
-            x: s.x + Math.cos(s.a) * nose,
-            y: s.y + Math.sin(s.a) * nose,
-            vx: s.vx + Math.cos(s.a) * 7.2,
-            vy: s.vy + Math.sin(s.a) * 7.2,
-            life: 1.35,
-            owner: s
-        });
+  }else ai.thrusting=false;
+
+  // Fire bursts, with slight imperfection.
+  if(face && Math.random()<dt*(1.6*difficulty)) fire(ai);
+  // Defensive hyperspace if a player torpedo is close.
+  let threatened=shots.some(q=>q.owner===player && Math.hypot(q.x-ai.x,q.y-ai.y)<55);
+  if(threatened && Math.random()<dt*.8*difficulty && !ai._space) {hyperspace(ai);ai._space=true}
+  if(!threatened)ai._space=false;
+}
+function physics(s,dt){
+  if(!s.alive)return;
+  s.cool=Math.max(0,s.cool-dt);
+  // Central Newtonian-ish gravity, deliberately tuned to feel like Spacewar rather than a simulator.
+  let dx=CX-s.x,dy=CY-s.y,r2=dx*dx+dy*dy,r=Math.sqrt(r2);
+  let g=starMass/Math.max(r2,3500);
+  if(r<34){respawnAtEdge(s);return}
+  s.vx+=dx/r*g*dt;s.vy+=dy/r*g*dt;
+  s.vx*=Math.pow(.9995,dt*60);s.vy*=Math.pow(.9995,dt*60);
+  const vmax=6.8;let sp=Math.hypot(s.vx,s.vy);
+  if(sp>vmax){s.vx*=vmax/sp;s.vy*=vmax/sp}
+  s.x+=s.vx*dt*60;s.y+=s.vy*dt*60;wrap(s);
+}
+function update(dt){
+  if(!running||paused)return;
+  controlPlayer(dt);aiControl(dt);
+  physics(player,dt);physics(ai,dt);
+
+  for(let i=shots.length-1;i>=0;i--){
+    let q=shots[i];q.x+=q.vx*dt*60;q.y+=q.vy*dt*60;q.life-=dt;wrap(q);
+    if(q.life<=0){shots.splice(i,1);continue}
+    // Torpedoes vanish when they strike the star instead of passing through it.
+    if(Math.hypot(q.x-CX,q.y-CY)<21){
+      for(let k=0;k<5;k++){
+        const a=rand(0,Math.PI*2),sp=rand(.3,1.3);
+        sparks.push({x:q.x,y:q.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,t:.25});
+      }
+      shots.splice(i,1);continue;
     }
-    function hyperspace(s) {
-        if (!s.alive || s.hyp <= 0)
-            return;
-        s.hyp--;
-        if (Math.random() < .09 * s.hyp) {
-            s.alive = false;
-            explode(s);
-            return
-        }
-        for (let i = 0; i < 12; i++)
-            sparks.push({
-                x: s.x,
-                y: s.y,
-                vx: rand(-2, 2),
-                vy: rand(-2, 2),
-                t: .35
-            });
-        s.x = rand(30, W - 30);
-        s.y = rand(30, H - 30);
-        s.vx = rand(-1.5, 1.5);
-        s.vy = rand(-1.5, 1.5);
+    let target=q.owner===player?ai:player;
+    if(target.alive && Math.hypot(q.x-target.x,q.y-target.y)<10){
+      target.alive=false;explode(target);
+      if(q.owner===player)scoreP++;else scoreAI++;
+      shots.splice(i,1);continue;
     }
-    function respawnAtEdge(s) {
-        // Hitting the sun is a setback, not a scored kill. Re-enter at a random screen edge.
-        explode(s);
-        const pad = 28,
-            side = Math.floor(Math.random() * 4);
-        if (side === 0) {
-            s.x = rand(pad, W - pad);
-            s.y = pad;
-        }
-        else if (side === 1) {
-            s.x = W - pad;
-            s.y = rand(pad, H - pad);
-        }
-        else if (side === 2) {
-            s.x = rand(pad, W - pad);
-            s.y = H - pad;
-        }
-        else {
-            s.x = pad;
-            s.y = rand(pad, H - pad);
-        }
+  }
+  // Ship-to-ship collision
+  if(player.alive&&ai.alive&&Math.hypot(player.x-ai.x,player.y-ai.y)<17){
+    player.alive=ai.alive=false;explode(player);explode(ai);
+    scoreP++;scoreAI++;
+  }
+  for(let i=sparks.length-1;i>=0;i--){
+    let p=sparks[i];p.x+=p.vx*dt*60;p.y+=p.vy*dt*60;p.t-=dt;
+    if(p.t<=0)sparks.splice(i,1);
+  }
+  if(!player.alive || !ai.alive){
+    roundOver=true;
+    setTimeout(()=>{
+      if(!running)return;
+      if(scoreP>=5||scoreAI>=5){
+        document.getElementById("menu").style.display="flex";
+        document.getElementById("status").innerHTML=(scoreP>scoreAI?"<span class='blink'>YOU WIN.</span>":"<span class='blink'>THE MACHINE WINS.</span>")+"<br><br>Press START for another duel.";
+        running=false;
+      } else resetRound();
+    },900);
+  }
+}
+function drawShip(s){
+  if(!s.alive)return;
+  ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);
+  ctx.strokeStyle="#eee";ctx.lineWidth=1.7;ctx.lineJoin="round";ctx.lineCap="round";
 
-        // Launch back into the arena with a small, random velocity.
-        const inward = Math.atan2(CY - s.y, CX - s.x) + rand(-0.35, 0.35);
-        const sp = rand(0.35, 0.95);
-        s.vx = Math.cos(inward) * sp;
-        s.vy = Math.sin(inward) * sp;
-        s.thrusting = false;
-        s.cool = .2;
+  if(s.kind==="needle"){
+    // The human ship keeps the classic Spacewar! Needle silhouette.
+    ctx.beginPath();
+    ctx.moveTo(13,0);ctx.lineTo(-9,-6);ctx.lineTo(-5,0);ctx.lineTo(-9,6);ctx.closePath();
+    ctx.stroke();
+  }else{
+    // The AI ship is deliberately half the previous size, while keeping
+    // the same top-down, chunky Enterprise-inspired silhouette.
+    ctx.scale(0.5,0.5);
+    // Computer ship: a chunky, top-down Enterprise-inspired silhouette.
+    // Large circular saucer, central bridge ring, tapered secondary hull,
+    // and two long swept-back engine nacelles.
+    const R=15;
+
+    // Saucer section.
+    ctx.beginPath();
+    ctx.arc(3,0,R,0,Math.PI*2);
+    ctx.stroke();
+
+    // Bridge / center ring.
+    ctx.beginPath();
+    ctx.arc(3,0,4.5,0,Math.PI*2);
+    ctx.stroke();
+
+    // Lower central body / secondary hull.
+    ctx.beginPath();
+    ctx.moveTo(-8,-4);
+    ctx.lineTo(-17,0);
+    ctx.lineTo(-8,5);
+    ctx.lineTo(0,3);
+    ctx.lineTo(0,-2);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Swept nacelle struts.
+    ctx.beginPath();
+    ctx.moveTo(-5,-9);ctx.lineTo(-18,-16);
+    ctx.moveTo(-5,9);ctx.lineTo(-18,16);
+    ctx.stroke();
+
+    // Nacelles, echoing the chunky capsules in the reference image.
+    function nacelle(y){
+      ctx.beginPath();
+      ctx.moveTo(-18,y-2.7);
+      ctx.lineTo(-34,y-2.7);
+      ctx.quadraticCurveTo(-37,y,-34,y+2.7);
+      ctx.lineTo(-18,y+2.7);
+      ctx.quadraticCurveTo(-15,y,-18,y-2.7);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(-30,y,1.7,0,Math.PI*2);
+      ctx.stroke();
     }
-    function controlPlayer(dt) {
-        if (!player.alive)
-            return;
-        const turn = 3.3;
-        if (keys.has("KeyA"))
-            player.a -= turn * dt;
-        if (keys.has("KeyD"))
-            player.a += turn * dt;
-        if (keys.has("KeyW") && player.fuel > 0) {
-            player.thrusting = true;
-            player.fuel = Math.max(0, player.fuel - 18 * dt);
-            player.vx += Math.cos(player.a) * 2.35 * dt;
-            player.vy += Math.sin(player.a) * 2.35 * dt;
-            for (let i = 0; i < 2; i++)
-                sparks.push({
-                    x: player.x - Math.cos(player.a) * 8,
-                    y: player.y - Math.sin(player.a) * 8,
-                    vx: -player.vx * .08 + rand(-.7, .7),
-                    vy: -player.vy * .08 + rand(-.7, .7),
-                    t: .18
-                });
-        } else
-            player.thrusting = false;
-        if (keys.has("KeyS"))
-            fire(player);
-        if (keys.has("Space") && !player._space) {
-            hyperspace(player);
-            player._space = true
-        }
-        if (!keys.has("Space"))
-            player._space = false;
+    nacelle(-18);nacelle(18);
+
+    // Tiny rear engineering detail.
+    ctx.beginPath();
+    ctx.moveTo(-7,0);ctx.lineTo(-16,0);ctx.stroke();
+  }
+
+  if(s.thrusting){
+    ctx.beginPath();
+    if(s.kind==="needle"){
+      ctx.moveTo(-6,-3);ctx.lineTo(-13,0);ctx.lineTo(-6,3);
+    }else{
+      // Twin engine exhaust traces.
+      ctx.moveTo(-35,-18);ctx.lineTo(-41,-18);
+      ctx.moveTo(-35,18);ctx.lineTo(-41,18);
     }
-    function aiControl(dt) {
-        if (!ai.alive)
-            return;
-        const dx = player.x - ai.x,
-            dy = player.y - ai.y;
-        let desired = Math.atan2(dy, dx);
-        // Lead the target. The AI gets better at higher difficulty, but never becomes clairvoyant.
-        desired = Math.atan2(dy + player.vy * .55 / difficulty, dx + player.vx * .55 / difficulty);
-        // Add orbital bias: occasionally use the star rather than charging straight in.
-        const r = Math.hypot(ai.x - CX, ai.y - CY);
-        if (r < 150)
-            desired += Math.PI * .35 * Math.sign(Math.sin(performance.now() / 900));
-        const err = angleDiff(desired, ai.a);
-        const turn = 2.0 * difficulty;
-        ai.a += clamp(err, -turn * dt, turn * dt);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function draw(){
+  ctx.fillStyle="#000";ctx.fillRect(0,0,W,H);
+  // PDP-1-ish starfield
+  for(const st of stars){
+    ctx.globalAlpha=.35+.45*st.p;ctx.fillStyle="#fff";ctx.fillRect(st.x,st.y,st.b,st.b);
+  }
+  ctx.globalAlpha=1;
+  // central sun
+  ctx.beginPath();ctx.arc(CX,CY,17,0,Math.PI*2);ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();
+  for(let a=0;a<8;a++){
+    let x=CX+Math.cos(a*Math.PI/4)*24,y=CY+Math.sin(a*Math.PI/4)*24;
+    ctx.fillRect(x-1,y-1,2,2);
+  }
+  // projectiles
+  ctx.fillStyle="#fff";
+  for(const q of shots){ctx.fillRect(q.x-1,q.y-1,3,3)}
+  for(const p of sparks){ctx.globalAlpha=clamp(p.t*2,0,1);ctx.fillRect(p.x,p.y,2,2)}
+  ctx.globalAlpha=1;
+  drawShip(player);drawShip(ai);
 
-        let face = Math.abs(err) < .24;
-        // Thrust when aimed reasonably well, and brake if getting too close to the star.
-        if ((face && Math.random() < .72 * difficulty) || r < 190) {
-            if (ai.fuel > 0) {
-                ai.thrusting = true;
-                ai.fuel = Math.max(0, ai.fuel - 15 * dt);
-                ai.vx += Math.cos(ai.a) * 2.0 * dt;
-                ai.vy += Math.sin(ai.a) * 2.0 * dt;
-            }
-        } else
-            ai.thrusting = false;
+  document.getElementById("left").textContent=`HUMAN  ${scoreP}`;
+  document.getElementById("right").textContent=`COMPUTER  ${scoreAI}`;
+  document.getElementById("round").textContent=paused?"PAUSED":"SPACEWAR! • 1962";
 
-        // Fire bursts, with slight imperfection.
-        if (face && Math.random() < dt * (1.6 * difficulty))
-            fire(ai);
-        // Defensive hyperspace if a player torpedo is close.
-        let threatened = shots.some(q => q.owner === player && Math.hypot(q.x - ai.x, q.y - ai.y) < 55);
-        if (threatened && Math.random() < dt * .8 * difficulty && !ai._space) {
-            hyperspace(ai);
-            ai._space = true
-        }
-        if (!threatened)
-            ai._space = false;
-    }
-    function physics(s, dt) {
-        if (!s.alive)
-            return;
-        s.cool = Math.max(0, s.cool - dt);
-        // Central Newtonian-ish gravity, deliberately tuned to feel like Spacewar rather than a simulator.
-        let dx = CX - s.x,
-            dy = CY - s.y,
-            r2 = dx * dx + dy * dy,
-            r = Math.sqrt(r2);
-        let g = starMass / Math.max(r2, 3500);
-        if (r < 34) {
-            respawnAtEdge(s);
-            return
-        }
-        s.vx += dx / r * g * dt;
-        s.vy += dy / r * g * dt;
-        s.vx *= Math.pow(.9995, dt * 60);
-        s.vy *= Math.pow(.9995, dt * 60);
-        const vmax = 6.8;
-        let sp = Math.hypot(s.vx, s.vy);
-        if (sp > vmax) {
-            s.vx *= vmax / sp;
-            s.vy *= vmax / sp
-        }
-        s.x += s.vx * dt * 60;
-        s.y += s.vy * dt * 60;
-        wrap(s);
-    }
-    function update(dt) {
-        if (!running || paused)
-            return;
-        controlPlayer(dt);
-        aiControl(dt);
-        physics(player, dt);
-        physics(ai, dt);
-
-        for (let i = shots.length - 1; i >= 0; i--) {
-            let q = shots[i];
-            q.x += q.vx * dt * 60;
-            q.y += q.vy * dt * 60;
-            q.life -= dt;
-            wrap(q);
-            if (q.life <= 0) {
-                shots.splice(i, 1);
-                continue
-            }
-            // Torpedoes vanish when they strike the star instead of passing through it.
-            if (Math.hypot(q.x - CX, q.y - CY) < 21) {
-                for (let k = 0; k < 5; k++) {
-                    const a = rand(0, Math.PI * 2),
-                        sp = rand(.3, 1.3);
-                    sparks.push({
-                        x: q.x,
-                        y: q.y,
-                        vx: Math.cos(a) * sp,
-                        vy: Math.sin(a) * sp,
-                        t: .25
-                    });
-                }
-                shots.splice(i, 1);
-                continue;
-            }
-            let target = q.owner === player ? ai : player;
-            if (target.alive && Math.hypot(q.x - target.x, q.y - target.y) < 10) {
-                target.alive = false;
-                explode(target);
-                if (q.owner === player)
-                    scoreP++;
-                else
-                    scoreAI++;
-                shots.splice(i, 1);
-                continue;
-            }
-        }
-        // Ship-to-ship collision
-        if (player.alive && ai.alive && Math.hypot(player.x - ai.x, player.y - ai.y) < 17) {
-            player.alive = ai.alive = false;
-            explode(player);
-            explode(ai);
-            scoreP++;
-            scoreAI++;
-        }
-        for (let i = sparks.length - 1; i >= 0; i--) {
-            let p = sparks[i];
-            p.x += p.vx * dt * 60;
-            p.y += p.vy * dt * 60;
-            p.t -= dt;
-            if (p.t <= 0)
-                sparks.splice(i, 1);
-        }
-        if (!player.alive || !ai.alive) {
-            roundOver = true;
-            setTimeout(() => {
-                if (!running)
-                    return;
-                if (scoreP >= 5 || scoreAI >= 5) {
-                    document.getElementById("menu").style.display = "flex";
-                    document.getElementById("status").innerHTML = (scoreP > scoreAI ? "<span class='blink'>YOU WIN.</span>" : "<span class='blink'>THE MACHINE WINS.</span>") + "<br><br>Press START for another duel.";
-                    running = false;
-                } else
-                    resetRound();
-            }, 900);
-        }
-    }
-    function drawShip(s) {
-        if (!s.alive)
-            return;
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.a);
-        ctx.strokeStyle = "#eee";
-        ctx.lineWidth = 1.7;
-        ctx.lineJoin = "round";
-        ctx.lineCap = "round";
-
-        if (s.kind === "needle") {
-            // The human ship keeps the classic Spacewar! Needle silhouette.
-            ctx.beginPath();
-            ctx.moveTo(13, 0);
-            ctx.lineTo(-9, -6);
-            ctx.lineTo(-5, 0);
-            ctx.lineTo(-9, 6);
-            ctx.closePath();
-            ctx.stroke();
-        } else {
-            // The AI ship is deliberately half the previous size, while keeping
-            // the same top-down, chunky Enterprise-inspired silhouette.
-            ctx.scale(0.5, 0.5);
-            // Computer ship: a chunky, top-down Enterprise-inspired silhouette.
-            // Large circular saucer, central bridge ring, tapered secondary hull,
-            // and two long swept-back engine nacelles.
-            const R = 15;
-
-            // Saucer section.
-            ctx.beginPath();
-            ctx.arc(3, 0, R, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Bridge / center ring.
-            ctx.beginPath();
-            ctx.arc(3, 0, 4.5, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Lower central body / secondary hull.
-            ctx.beginPath();
-            ctx.moveTo(-8, -4);
-            ctx.lineTo(-17, 0);
-            ctx.lineTo(-8, 5);
-            ctx.lineTo(0, 3);
-            ctx.lineTo(0, -2);
-            ctx.closePath();
-            ctx.stroke();
-
-            // Swept nacelle struts.
-            ctx.beginPath();
-            ctx.moveTo(-5, -9);
-            ctx.lineTo(-18, -16);
-            ctx.moveTo(-5, 9);
-            ctx.lineTo(-18, 16);
-            ctx.stroke();
-
-            // Nacelles, echoing the chunky capsules in the reference image.
-            function nacelle(y) {
-                ctx.beginPath();
-                ctx.moveTo(-18, y - 2.7);
-                ctx.lineTo(-34, y - 2.7);
-                ctx.quadraticCurveTo(-37, y, -34, y + 2.7);
-                ctx.lineTo(-18, y + 2.7);
-                ctx.quadraticCurveTo(-15, y, -18, y - 2.7);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(-30, y, 1.7, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            nacelle(-18);
-            nacelle(18);
-
-            // Tiny rear engineering detail.
-            ctx.beginPath();
-            ctx.moveTo(-7, 0);
-            ctx.lineTo(-16, 0);
-            ctx.stroke();
-        }
-
-        if (s.thrusting) {
-            ctx.beginPath();
-            if (s.kind === "needle") {
-                ctx.moveTo(-6, -3);
-                ctx.lineTo(-13, 0);
-                ctx.lineTo(-6, 3);
-            } else {
-                // Twin engine exhaust traces.
-                ctx.moveTo(-35, -18);
-                ctx.lineTo(-41, -18);
-                ctx.moveTo(-35, 18);
-                ctx.lineTo(-41, 18);
-            }
-            ctx.stroke();
-        }
-        ctx.restore();
-    }
-    function draw() {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, W, H);
-        // PDP-1-ish starfield
-        for (const st of stars) {
-            ctx.globalAlpha = .35 + .45 * st.p;
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(st.x, st.y, st.b, st.b);
-        }
-        ctx.globalAlpha = 1;
-        // central sun
-        ctx.beginPath();
-        ctx.arc(CX, CY, 17, 0, Math.PI * 2);
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        for (let a = 0; a < 8; a++) {
-            let x = CX + Math.cos(a * Math.PI / 4) * 24,
-                y = CY + Math.sin(a * Math.PI / 4) * 24;
-            ctx.fillRect(x - 1, y - 1, 2, 2);
-        }
-        // projectiles
-        ctx.fillStyle = "#fff";
-        for (const q of shots) {
-            ctx.fillRect(q.x - 1, q.y - 1, 3, 3)
-        }
-        for (const p of sparks) {
-            ctx.globalAlpha = clamp(p.t * 2, 0, 1);
-            ctx.fillRect(p.x, p.y, 2, 2)
-        }
-        ctx.globalAlpha = 1;
-        drawShip(player);
-        drawShip(ai);
-
-        document.getElementById("left").textContent = `HUMAN  ${scoreP}`;
-        document.getElementById("right").textContent = `COMPUTER  ${scoreAI}`;
-        document.getElementById("round").textContent = paused ? "PAUSED" : "SPACEWAR! • 1962";
-    }
-    function loop(t) {
-        let dt = Math.min(.035, (t - last) / 1000 || 0);
-        last = t;
-        update(dt);
-        draw();
-        requestAnimationFrame(loop);
-    }
-    makeStars();
-    resetRound();
-    requestAnimationFrame(loop);
-    </script>
-
+  const fuel = player ? clamp(player.fuel, 0, 100) : 100;
+  const missiles = player ? clamp(player.ammo, 0, 18) : 18;
+  document.getElementById("fuelValue").textContent=Math.ceil(fuel);
+  document.getElementById("fuelFill").style.width=fuel+"%";
+  document.getElementById("missileValue").textContent=missiles;
+  document.getElementById("missileFill").style.width=((missiles/18)*100)+"%";
+}
+function loop(t){
+  let dt=Math.min(.035,(t-last)/1000||0);last=t;
+  update(dt);draw();requestAnimationFrame(loop);
+}
+makeStars();resetRound();requestAnimationFrame(loop);
+</script>
 </body>
 </html>
